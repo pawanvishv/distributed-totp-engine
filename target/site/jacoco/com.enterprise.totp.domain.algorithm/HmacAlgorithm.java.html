@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HmacAlgorithm.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Distributed TOTP Engine</a> &gt; <a href="index.source.html" class="el_package">com.enterprise.totp.domain.algorithm</a> &gt; <span class="el_source">HmacAlgorithm.java</span></div><h1>HmacAlgorithm.java</h1><pre class="source lang-java linenums">package com.enterprise.totp.domain.algorithm;
+
+
+<span class="fc" id="L4">public enum HmacAlgorithm {</span>
+
+<span class="fc" id="L6">    SHA1(&quot;HmacSHA1&quot;, &quot;SHA1&quot;, 20),</span>
+<span class="fc" id="L7">    SHA256(&quot;HmacSHA256&quot;, &quot;SHA256&quot;, 32),</span>
+<span class="fc" id="L8">    SHA512(&quot;HmacSHA512&quot;, &quot;SHA512&quot;, 64);</span>
+
+    private final String jcaName;
+    private final String uriName;
+    private final int outputBytes;
+
+<span class="fc" id="L14">    HmacAlgorithm(String jcaName, String uriName, int outputBytes) {</span>
+<span class="fc" id="L15">        this.jcaName = jcaName;</span>
+<span class="fc" id="L16">        this.uriName = uriName;</span>
+<span class="fc" id="L17">        this.outputBytes = outputBytes;</span>
+<span class="fc" id="L18">    }</span>
+
+    
+    public String jcaName() {
+<span class="fc" id="L22">        return jcaName;</span>
+    }
+
+    
+    public String uriName() {
+<span class="fc" id="L27">        return uriName;</span>
+    }
+
+    
+    public int outputBytes() {
+<span class="nc" id="L32">        return outputBytes;</span>
+    }
+
+    
+    public static HmacAlgorithm fromName(String name) {
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        for (HmacAlgorithm alg : values()) {</span>
+<span class="nc bnc" id="L38" title="All 4 branches missed.">            if (alg.jcaName.equalsIgnoreCase(name) || alg.uriName.equalsIgnoreCase(name)) {</span>
+<span class="nc" id="L39">                return alg;</span>
+            }
+        }
+<span class="nc" id="L42">        throw new IllegalArgumentException(&quot;Unknown HMAC algorithm: &quot; + name);</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

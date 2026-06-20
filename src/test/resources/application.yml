@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL;DEFAULT_NULL_ORDERING=HIGH
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+
+totp:
+  time-step-seconds: 30
+  skew-window: 1
+  algorithm: SHA1
+  issuer-name: TestIssuer
+  encryption:
+    key-env-var: TOTP_ENCRYPTION_KEY
+  warmup:
+    enabled: false

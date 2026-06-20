@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.enterprise.totp.infrastructure.Base32CodecTest
+-------------------------------------------------------------------------------
+Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.732 s -- in com.enterprise.totp.infrastructure.Base32CodecTest

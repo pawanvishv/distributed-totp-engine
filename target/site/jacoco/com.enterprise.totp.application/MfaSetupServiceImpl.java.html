@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MfaSetupServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Distributed TOTP Engine</a> &gt; <a href="index.source.html" class="el_package">com.enterprise.totp.application</a> &gt; <span class="el_source">MfaSetupServiceImpl.java</span></div><h1>MfaSetupServiceImpl.java</h1><pre class="source lang-java linenums">package com.enterprise.totp.application;
+
+import com.enterprise.totp.api.dto.SetupRequest;
+import com.enterprise.totp.api.dto.SetupResponse;
+import com.enterprise.totp.api.exception.MfaAlreadyEnabledException;
+import com.enterprise.totp.application.port.MfaSetupUseCase;
+import com.enterprise.totp.config.TotpProperties;
+import com.enterprise.totp.domain.algorithm.HmacAlgorithm;
+import com.enterprise.totp.infrastructure.base32.Base32Codec;
+import com.enterprise.totp.infrastructure.crypto.SecretEncryptionService;
+import com.enterprise.totp.infrastructure.persistence.entity.UserMfaProfile;
+import com.enterprise.totp.infrastructure.persistence.repository.UserMfaProfileRepository;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.util.Optional;
+
+
+@Service
+@Transactional
+public class MfaSetupServiceImpl implements MfaSetupUseCase {
+
+    private final UserMfaProfileRepository repository;
+    private final SecretEncryptionService encryptionService;
+    private final TotpProperties properties;
+    private final MeterRegistry meterRegistry;
+
+<span class="fc" id="L32">    public MfaSetupServiceImpl(UserMfaProfileRepository repository,</span>
+                                SecretEncryptionService encryptionService,
+                                TotpProperties properties,
+                                MeterRegistry meterRegistry) {
+<span class="fc" id="L36">        this.repository = repository;</span>
+<span class="fc" id="L37">        this.encryptionService = encryptionService;</span>
+<span class="fc" id="L38">        this.properties = properties;</span>
+<span class="fc" id="L39">        this.meterRegistry = meterRegistry;</span>
+<span class="fc" id="L40">    }</span>
+
+    @Override
+    public SetupResponse setup(SetupRequest request) {
+<span class="nc" id="L44">        String userId = request.userId();</span>
+<span class="nc" id="L45">        String label = request.label();</span>
+<span class="nc" id="L46">        Optional&lt;UserMfaProfile&gt; existing = repository.findByUserId(userId);</span>
+<span class="nc bnc" id="L47" title="All 4 branches missed.">        if (existing.isPresent() &amp;&amp; existing.get().isEnabled()) {</span>
+<span class="nc" id="L48">            meterRegistry.counter(&quot;mfa.setup.conflict&quot;).increment();</span>
+<span class="nc" id="L49">            throw new MfaAlreadyEnabledException(userId);</span>
+        }
+<span class="nc" id="L51">        byte[] rawSecret = new byte[20];</span>
+<span class="nc" id="L52">        new SecureRandom().nextBytes(rawSecret);</span>
+
+<span class="nc" id="L54">        String base32Secret = Base32Codec.encode(rawSecret);</span>
+<span class="nc" id="L55">        String encryptedSecret = encryptionService.encrypt(base32Secret.getBytes(StandardCharsets.UTF_8));</span>
+
+<span class="nc" id="L57">        HmacAlgorithm algorithm = HmacAlgorithm.fromName(properties.getAlgorithm());</span>
+
+<span class="nc" id="L59">        UserMfaProfile profile = existing</span>
+<span class="nc" id="L60">                .map(p -&gt; {</span>
+<span class="nc" id="L61">                    p.setEncryptedSecret(encryptedSecret);</span>
+<span class="nc" id="L62">                    p.setAlgorithm(algorithm);</span>
+<span class="nc" id="L63">                    p.setEnabled(true);</span>
+<span class="nc" id="L64">                    return p;</span>
+                })
+<span class="nc" id="L66">                .orElseGet(() -&gt; new UserMfaProfile(userId, encryptedSecret, algorithm));</span>
+
+<span class="nc" id="L68">        repository.save(profile);</span>
+
+<span class="nc" id="L70">        String otpauthUri = buildOtpauthUri(base32Secret, label, algorithm);</span>
+<span class="nc" id="L71">        meterRegistry.counter(&quot;mfa.setup.success&quot;).increment();</span>
+
+<span class="nc" id="L73">        return new SetupResponse(otpauthUri);</span>
+    }
+
+    private String buildOtpauthUri(String base32Secret, String label, HmacAlgorithm algorithm) {
+<span class="nc" id="L77">        String labelEncoded = URLEncoder.encode(label, StandardCharsets.UTF_8);</span>
+<span class="nc" id="L78">        String issuerEncoded = URLEncoder.encode(properties.getIssuerName(), StandardCharsets.UTF_8);</span>
+
+<span class="nc" id="L80">        return &quot;otpauth://totp/&quot; + labelEncoded</span>
+<span class="nc" id="L81">                + &quot;?secret=&quot; + base32Secret</span>
+<span class="nc" id="L82">                + &quot;&amp;issuer=&quot; + issuerEncoded</span>
+<span class="nc" id="L83">                + &quot;&amp;algorithm=&quot; + algorithm.uriName()</span>
+                + &quot;&amp;digits=6&quot;
+<span class="nc" id="L85">                + &quot;&amp;period=&quot; + properties.getTimeStepSeconds();</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

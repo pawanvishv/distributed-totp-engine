@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MfaController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Distributed TOTP Engine</a> &gt; <a href="index.source.html" class="el_package">com.enterprise.totp.api.controller</a> &gt; <span class="el_source">MfaController.java</span></div><h1>MfaController.java</h1><pre class="source lang-java linenums">package com.enterprise.totp.api.controller;
+
+import com.enterprise.totp.api.dto.SetupRequest;
+import com.enterprise.totp.api.dto.SetupResponse;
+import com.enterprise.totp.api.dto.VerifyRequest;
+import com.enterprise.totp.api.dto.VerifyResponse;
+import com.enterprise.totp.application.port.MfaSetupUseCase;
+import com.enterprise.totp.application.port.MfaVerificationUseCase;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+
+@RestController
+@RequestMapping(&quot;/api/v1/mfa&quot;)
+public class MfaController {
+
+    private final MfaSetupUseCase setupUseCase;
+    private final MfaVerificationUseCase verificationUseCase;
+
+<span class="fc" id="L22">    public MfaController(MfaSetupUseCase setupUseCase,</span>
+                          MfaVerificationUseCase verificationUseCase) {
+<span class="fc" id="L24">        this.setupUseCase = setupUseCase;</span>
+<span class="fc" id="L25">        this.verificationUseCase = verificationUseCase;</span>
+<span class="fc" id="L26">    }</span>
+
+    
+    @PostMapping(&quot;/setup&quot;)
+    public ResponseEntity&lt;SetupResponse&gt; setup(@Valid @RequestBody SetupRequest request) {
+<span class="nc" id="L31">        SetupResponse response = setupUseCase.setup(request);</span>
+<span class="nc" id="L32">        return ResponseEntity.status(HttpStatus.CREATED).body(response);</span>
+    }
+
+    
+    @PostMapping(&quot;/verify&quot;)
+    public ResponseEntity&lt;VerifyResponse&gt; verify(@Valid @RequestBody VerifyRequest request) {
+<span class="nc" id="L38">        VerifyResponse response = verificationUseCase.verify(request);</span>
+<span class="nc" id="L39">        return ResponseEntity.ok(response);</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
