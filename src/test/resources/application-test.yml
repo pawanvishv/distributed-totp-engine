@@ -1,0 +1,8 @@
+totp:
+  encryption:
+    key-env-var: TOTP_ENCRYPTION_KEY
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop

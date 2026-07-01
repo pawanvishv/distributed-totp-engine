@@ -17,6 +17,10 @@ spring:
     validate-on-migrate: true
     locations: classpath:db/migration
 
+logging:
+  level:
+    com.enterprise.totp: DEBUG
+
 management:
   server:
     port: ${MANAGEMENT_PORT:${server.port:8080}}
@@ -47,7 +51,7 @@ management:
         enabled: true
 
 totp:
-  time-step-seconds: 30
+  time-step-seconds: 60
   skew-window: 1
   algorithm: SHA1
   issuer-name: EnterpriseIAM
