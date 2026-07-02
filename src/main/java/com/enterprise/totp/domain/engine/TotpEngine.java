@@ -36,12 +36,21 @@ public class TotpEngine {
         long currentStep = now / stepMillis;
         int skewWindow = properties.getSkewWindow();
 
+        long skewMillis = 5_000L;
+        long minStep = (now - skewMillis) / stepMillis;
+        long maxStep = (now + skewMillis) / stepMillis;
+
+
         TotpStrategy strategy = strategyFactory.getStrategy(algorithm);
 
-        Map<Long, String> codes = new LinkedHashMap<>((skewWindow * 2 + 1) * 2);
-        for (long step = currentStep - skewWindow; step <= currentStep + skewWindow; step++) {
-            codes.put(step, strategy.generateCode(secret, step));
-        }
+//        Map<Long, String> codes = new LinkedHashMap<>((skewWindow * 2 + 1) * 2);
+        Map<Long, String>  codes = new LinkedHashMap<>((int) (maxStep - minStep + 1) * 2);
+            for (long step = minStep;  step <= maxStep; step++) {
+                codes.put(step, strategy.generateCode(secret, step));
+            }
+//        for (long step = currentStep - skewWindow; step <= currentStep + skewWindow; step++) {
+//            codes.put(step, strategy.generateCode(secret, step));
+//        }
         return codes;
     }
 }

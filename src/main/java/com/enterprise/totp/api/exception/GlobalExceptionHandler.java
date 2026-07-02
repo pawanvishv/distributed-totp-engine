@@ -34,8 +34,11 @@ public class GlobalExceptionHandler {
     })
     public ProblemDetail handleAuthFailure(TotpException ex) {
         log.debug("Authentication failure [{}]: {}", ex.getClass().getSimpleName(), ex.getMessage());
-        return buildProblemDetail(HttpStatus.UNAUTHORIZED, AUTH_FAILURE_TYPE,
+        ProblemDetail problem = buildProblemDetail(HttpStatus.UNAUTHORIZED, AUTH_FAILURE_TYPE,
                 AUTH_FAILURE_TITLE, AUTH_FAILURE_DETAIL);
+        problem.setProperty("debugException", ex.getClass().getSimpleName());
+        problem.setProperty("debugMessage", ex.getMessage());
+        return problem;
     }
 
     @ExceptionHandler(MfaAlreadyEnabledException.class)

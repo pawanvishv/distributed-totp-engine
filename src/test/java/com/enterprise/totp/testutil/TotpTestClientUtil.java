@@ -26,8 +26,8 @@ public class TotpTestClientUtil {
 
     public static void main(String[] args) throws Exception {
         // Paste the otpauthUri received from /api/v1/mfa/setup
-        String otpauthUri = "otpauth://totp/user126%40EnterpriseIAM?secret=HT4223BZPWOYYDZ3T2ZSFUYTCYUFWCD4&issuer=EnterpriseIAM&algorithm=SHA1&digits=6&period=60";
-        String userId = "user126";
+        String otpauthUri = "otpauth://totp/user14%40EnterpriseIAM?secret=HB26LD2PE7AUPNA243HIQ7WE3SRGRNHT&issuer=EnterpriseIAM&algorithm=SHA1&digits=6&period=60";
+        String userId = "user14";
         boolean callVerifyApi = false; // set false to just print the code
         String verifyEndpoint = "http://localhost:8080/api/v1/mfa/verify";
 
